@@ -414,7 +414,7 @@ class OrdersPage(BasePage):
                     }
                 )
             except Exception as exc:
-                log.error("Failed to parse row", index=idx, error=str(exc))
+                log.error("Failed to parse row", index=idx, error=str(exc), row_html=row.inner_html()[:200] if row else "N/A")
                 continue
         log.info("Extracted orders count", count=len(orders))
         return orders
