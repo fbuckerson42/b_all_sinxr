@@ -397,11 +397,12 @@ class OrdersPage(BasePage):
                 status = row.query_selector(self.STATUS_SPAN).inner_text().strip()
                 manager = row.query_selector(self.MANAGER_NAME_SELECTOR).inner_text().strip()
                 total_raw = row.query_selector(self.TOTAL_COST_CELL).inner_text().strip()
-                # Normalise total cost – Ukrainian format uses dots as thousands separators
-                # e.g., "2.520.00" = 2520.00, "14.910.00" = 14910.00
+                # Ukrainian format uses dots as thousands separators, e.g., "2.520.00" = 2520.00
                 total_clean = total_raw.replace("\xa0", "").replace(",", ".")
-                # Remove dots (thousands separators) and currency symbols
-                total_clean = total_clean.replace(".", "")
+                # Find last dot (decimal separator) and remove all other dots (thousands)
+                if total_clean.count('.') > 1:
+                    last_dot_idx = total_clean.rfind('.')
+                    total_clean = total_clean[:last_dot_idx].replace('.', '') + total_clean[last_dot_idx:]
                 # Remove any currency symbols / letters
                 total_clean = "".join(ch for ch in total_clean if ch.isdigit() or ch == ".")
                 total = float(total_clean) if total_clean else 0.0
