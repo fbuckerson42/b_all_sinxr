@@ -12,18 +12,20 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Clear pip cache
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-disable
+
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.12'
 
-      - name: Clear pip cache
-        run: pip cache purge
-
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install pydantic-settings --force-reinstall
           pip install -r requirements.txt
 
       - name: Install Playwright browsers
