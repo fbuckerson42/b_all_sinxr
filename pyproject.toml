@@ -1,0 +1,26 @@
+[tool.poetry]
+name = "keycrm-scraper"
+version = "0.1.0"
+description = "Stable Playwright scraper for KeyCRM with CLI and PostgreSQL persistence"
+authors = ["Your Name <you@example.com>"]
+license = "MIT"
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = ">=3.9,<4.0"
+playwright = "^1.44.0"
+click = "^8.1.7"
+tenacity = "^9.0.0"
+loguru = "^0.7.2"
+psycopg2-binary = "^2.9.9"
+pydantic = "^2.7.0"
+python-dotenv = "^1.0.1"
+
+[tool.poetry.dev-dependencies]
+ruff = "^0.2.2"
+black = "^24.3.0"
+pytest = "^8.2.0"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"

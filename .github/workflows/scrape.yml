@@ -1,0 +1,50 @@
+name: Run KeyCRM Scraper
+
+on:
+  workflow_dispatch:
+
+jobs:
+  scrape:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Install Playwright browsers
+        run: |
+          playwright install chromium
+          playwright install-deps
+
+      - name: Run scraper
+        env:
+          KEYCRM_URL: ${{ secrets.KEYCRM_URL }}
+          KEYCRM_USERNAME: ${{ secrets.KEYCRM_USERNAME }}
+          KEYCRM_PASSWORD: ${{ secrets.KEYCRM_PASSWORD }}
+          AIVEN_PG_HOST: ${{ secrets.AIVEN_PG_HOST }}
+          AIVEN_PG_PORT: ${{ secrets.AIVEN_PG_PORT }}
+          AIVEN_PG_DB: ${{ secrets.AIVEN_PG_DB }}
+          AIVEN_PG_USER: ${{ secrets.AIVEN_PG_USER }}
+          AIVEN_PG_PASSWORD: ${{ secrets.AIVEN_PG_PASSWORD }}
+          AIVEN_PG_SSLMODE: ${{ secrets.AIVEN_PG_SSLMODE }}
+        run: python -m scraper.cli --headless
+
+      - name: Upload logs on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: scraper-logs
+          path: logs/
+          retention-days: 7
