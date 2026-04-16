@@ -39,7 +39,7 @@ jobs:
           AIVEN_PG_USER: ${{ secrets.AIVEN_PG_USER }}
           AIVEN_PG_PASSWORD: ${{ secrets.AIVEN_PG_PASSWORD }}
           AIVEN_PG_SSLMODE: ${{ secrets.AIVEN_PG_SSLMODE }}
-        run: python -m scraper.cli --headless
+        run: python -m scraper.cli --headless --yes
 
       - name: Upload logs on failure
         if: failure()
