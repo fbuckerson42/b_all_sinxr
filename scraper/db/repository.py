@@ -7,7 +7,9 @@ and provides a ``upsert_orders_batch`` function for bulk inserting/updating orde
 
 from __future__ import annotations
 
-from typing import List, Mapping, Union
+from datetime import date
+from decimal import Decimal
+from typing import List, Dict, Any
 
 import psycopg2
 from psycopg2.extras import execute_values
@@ -16,24 +18,13 @@ from .models import Order, CREATE_ORDERS_TABLE_SQL
 from ..config import settings
 from ..logger import log
 
-# ---------------------------------------------------------------------------
-# Helper to obtain a new connection – callers are responsible for closing it.
-# ---------------------------------------------------------------------------
 
 def _get_connection():
-    """Create a new ``psycopg2`` connection using the DSN from settings.
-
-    The connection uses ``autocommit`` so that each UPSERT is persisted
-    immediately – this keeps the scraper simple and avoids transaction
-    boilerplate.
-    """
+    """Create a new ``psycopg2`` connection using the DSN from settings."""
     conn = psycopg2.connect(settings.pg_dsn)
     conn.autocommit = True
     return conn
 
-# ---------------------------------------------------------------------------
-# Initialise the database – executed once per process start.
-# ---------------------------------------------------------------------------
 
 def init_db():
     """Create the ``orders`` table if it does not already exist."""
@@ -44,12 +35,23 @@ def init_db():
     log.info("Database ready")
 
 
-def upsert_orders_batch(orders: List[Union[Order, Mapping]], batch_size: int = 100):
+def _normalize_order(order: Dict[str, Any]) -> tuple:
+    """Convert a dict to a tuple for database insertion."""
+    order_id = str(order["order_id"])
+    created_at = order["created_at"]
+    closed_at = order.get("closed_at")
+    status = str(order["status"])
+    manager = str(order["manager"])
+    total_cost = Decimal(str(order["total_cost"]))
+    return (order_id, created_at, closed_at, status, manager, total_cost)
+
+
+def upsert_orders_batch(orders: List[Dict[str, Any]], batch_size: int = 100):
     """Insert or update multiple orders in a batch.
 
     Parameters
     ----------
-    orders: List of ``Order`` or mapping with keys matching the ``Order`` fields.
+    orders: List of dictionaries with order data.
     batch_size: Number of orders to insert per batch (default 100).
     """
     if not orders:
@@ -66,16 +68,7 @@ def upsert_orders_batch(orders: List[Union[Order, Mapping]], batch_size: int = 1
         "updated_at = now();"
     )
 
-    normalized_orders = []
-    for order in orders:
-        if not isinstance(order, Order):
-            order = Order(**order)
-        normalized_orders.append(order)
-
-    values_list = [
-        (o.order_id, o.created_at, o.closed_at, o.status, o.manager, o.total_cost)
-        for o in normalized_orders
-    ]
+    values_list = [_normalize_order(order) for order in orders]
 
     try:
         with _get_connection() as conn:
