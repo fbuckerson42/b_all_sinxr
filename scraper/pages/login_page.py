@@ -20,9 +20,10 @@ from ..logger import log
 class LoginPage(BasePage):
     USERNAME_SELECTOR = "input[name=\"username\"]:not([type=\"password\"])"
     PASSWORD_SELECTOR = "input[name=\"username\"][type=\"password\"]"
-    SUBMIT_SELECTOR = "button:has-text(\"Увійти\")"
+    SUBMIT_SELECTOR = "button[type=\"submit\"]"
+    TIMEOUT = 60_000
 
-    def __init__(self, page: Page, timeout: int = 30_000):
+    def __init__(self, page: Page, timeout: int = 60_000):
         super().__init__(page, timeout)
 
     def goto(self) -> None:
