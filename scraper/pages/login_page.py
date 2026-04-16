@@ -44,11 +44,15 @@ class LoginPage(BasePage):
         self.wait_for_visible(self.PASSWORD_SELECTOR)
         self.page.fill(self.PASSWORD_SELECTOR, password)
         
-        # Click submit - try both selectors
+        # Click submit - try multiple selectors
         try:
             self.page.click("button[type=\"submit\"]", timeout=5000)
         except:
-            self.page.click("button.primary", timeout=5000)
+            try:
+                self.page.click("button.primary", timeout=5000)
+            except:
+                # Try any button with visible text
+                self.page.click("form button", timeout=5000)
         
         # Wait for navigation after login
         self.page.wait_for_load_state("networkidle", timeout=self.timeout)
