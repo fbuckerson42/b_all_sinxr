@@ -1,14 +1,15 @@
 import sys
 import click
 
-# Import the core scraper run function (will be implemented later)
+# Import the core scraper run function
 try:
     from .scraper.keycrm_scraper import run
-except ImportError:
+except ImportError as e:
     # Fallback placeholder for early development stage
+    print(f'Error importing scraper: {e}')
     def run(*args, **kwargs):  # type: ignore
         click.echo('Core scraper not implemented yet.')
-        sys.exit(0)
+        sys.exit(1)
 
 @click.command()
 @click.option('--headless/--no-headless', default=True,
