@@ -2,7 +2,7 @@
 name = "keycrm-scraper"
 version = "0.1.0"
 description = "Stable Playwright scraper for KeyCRM with CLI and PostgreSQL persistence"
-authors = ["Your Name <you@example.com>"]
+authors = ["illustratum"]
 license = "MIT"
 readme = "README.md"
 
