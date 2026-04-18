@@ -49,24 +49,22 @@ def _normalize_order(order: Dict[str, Any]) -> tuple:
 def upsert_orders_batch(orders: List[Dict[str, Any]], batch_size: int = 100):
     """Insert or update multiple orders in a batch.
 
-    Parameters
-    ----------
-    orders: List of dictionaries with order data.
-    batch_size: Number of orders to insert per batch (default 100).
+    Only updates status if changed, only updates total_cost if changed.
     """
     if not orders:
         return
 
-    sql = (
-        "INSERT INTO orders (order_id, created_at, closed_at, status, manager, total_cost) "
-        "VALUES %s ON CONFLICT (order_id) DO UPDATE SET "
-        "created_at = EXCLUDED.created_at, "
-        "closed_at = EXCLUDED.closed_at, "
-        "status = EXCLUDED.status, "
-        "manager = EXCLUDED.manager, "
-        "total_cost = EXCLUDED.total_cost, "
-        "updated_at = now();"
-    )
+    # SQL that only updates when values are different
+    sql = """
+        INSERT INTO orders (order_id, created_at, closed_at, status, manager, total_cost) 
+        VALUES %s 
+        ON CONFLICT (order_id) DO UPDATE SET 
+            status = CASE WHEN orders.status != EXCLUDED.status THEN EXCLUDED.status ELSE orders.status END,
+            total_cost = CASE WHEN orders.total_cost != EXCLUDED.total_cost THEN EXCLUDED.total_cost ELSE orders.total_cost END,
+            closed_at = EXCLUDED.closed_at,
+            manager = EXCLUDED.manager,
+            updated_at = now()
+    """
 
     values_list = [_normalize_order(order) for order in orders]
 
