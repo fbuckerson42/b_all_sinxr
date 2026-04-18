@@ -63,7 +63,11 @@ def upsert_orders_batch(orders: List[Dict[str, Any]], batch_size: int = 100):
             total_cost = CASE WHEN orders.total_cost != EXCLUDED.total_cost THEN EXCLUDED.total_cost ELSE orders.total_cost END,
             closed_at = EXCLUDED.closed_at,
             manager = EXCLUDED.manager,
-            updated_at = now()
+            updated_at = CASE 
+                WHEN orders.status != EXCLUDED.status OR orders.total_cost != EXCLUDED.total_cost 
+                THEN now() 
+                ELSE orders.updated_at 
+            END
     """
 
     values_list = [_normalize_order(order) for order in orders]
